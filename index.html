@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV'ni Konuştur 🎤</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #0f0f1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 780px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    color: #94a3b8;
+    margin-top: 8px;
+    font-size: 1rem;
+  }
+
+  /* Card */
+  .card {
+    background: #1a1a2e;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 1px solid #2d2d4a;
+  }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #a78bfa;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 200px;
+    background: #0f0f1a;
+    border: 1px solid #2d2d4a;
+    border-radius: 12px;
+    padding: 16px;
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: #a78bfa;
+  }
+
+  textarea::placeholder {
+    color: #4a4a6a;
+  }
+
+  /* Buttons */
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    color: white;
+    box-shadow: 0 4px 20px rgba(167, 139, 250, 0.3);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(167, 139, 250, 0.4);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: white;
+    box-shadow: 0 4px 20px rgba(52, 211, 153, 0.3);
+  }
+
+  .btn-success:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(52, 211, 153, 0.4);
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid #2d2d4a;
+    color: #94a3b8;
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    border-color: #a78bfa;
+    color: #a78bfa;
+  }
+
+  /* Output */
+  .output-section {
+    margin-top: 20px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+  }
+
+  .output-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .output-box {
+    background: #0f0f1a;
+    border: 1px solid #2d2d4a;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 120px;
+    line-height: 1.8;
+    font-size: 0.95rem;
+  }
+
+  .output-box .speaker-label {
+    color: #34d399;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .output-box .speech-text {
+    color: #e0e0e0;
+    white-space: pre-wrap;
+  }
+
+  .speech-text .highlight {
+    color: #fbbf24;
+    font-weight: 500;
+  }
+
+  .speech-text .em {
+    color: #60a5fa;
+    font-style: italic;
+  }
+
+  /* Status indicator */
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #4a4a6a;
+    margin-top: 16px;
+  }
+
+  .status .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4a4a6a;
+  }
+
+  .status .dot.active {
+    background: #34d399;
+    animation: pulse 1.5s infinite;
+  }
+
+  .status .dot.speaking {
+    background: #f59e0b;
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Example badge */
+  .example-badge {
+    text-align: right;
+    margin-bottom: 8px;
+  }
+
+  .example-badge button {
+    background: none;
+    border: none;
+    color: #4a4a6a;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: inherit;
+  }
+
+  .example-badge button:hover {
+    color: #a78bfa;
+  }
+
+  /* Voice select */
+  .voice-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .voice-row select {
+    background: #0f0f1a;
+    border: 1px solid #2d2d4a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #e0e0e0;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .voice-row select:focus {
+    outline: none;
+    border-color: #a78bfa;
+  }
+
+  .voice-row label {
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #4a4a6a;
+    font-size: 0.85rem;
+  }
+
+  footer a {
+    color: #a78bfa;
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .container { padding: 0; }
+    .card { padding: 20px; border-radius: 16px; }
+    header h1 { font-size: 1.6rem; }
+    .actions { flex-direction: column; }
+  }
+
+  /* Turkish voices warning */
+  .voice-info {
+    font-size: 0.8rem;
+    color: #f59e0b;
+    margin-top: 4px;
+    display: none;
+  }
+
+  .voice-info.visible {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <h1>🎤 CV'ni Konuştur</h1>
+    <p>CV'ni yapıştır, seni anlatan bir konuşma metnine dönüşsün. Sesli dinle, paylaş.</p>
+  </header>
+
+  <div class="card">
+
+    <div class="card-title">📄 CV Metni</div>
+
+    <div class="example-badge">
+      <button onclick="loadExample()">✨ Örnek CV yükle</button>
+    </div>
+
+    <textarea id="cvInput" placeholder="CV'ni buraya yapıştır...
+Eğitim, staj, beceriler, hedef pozisyon — ne kadar detaylı o kadar iyi konuşma metni çıkar."></textarea>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="convertBtn" onclick="convertCV()">
+        ✨ Konuşma Metni Oluştur
+      </button>
+      <button class="btn btn-success" id="speakBtn" onclick="speakIt()" disabled>
+        🔈 Konuştur
+      </button>
+      <button class="btn btn-outline" id="stopBtn" onclick="stopSpeak()" disabled>
+        ⏹ Durdur
+      </button>
+    </div>
+
+    <!-- Voice selection -->
+    <div class="voice-row">
+      <label for="voiceSelect">Ses:</label>
+      <select id="voiceSelect"></select>
+      <label style="margin-left:8px;">
+        <input type="range" id="rateSlider" min="0.5" max="1.5" step="0.1" value="1.0" style="width:80px;accent-color:#a78bfa;">
+        <span id="rateLabel">1.0x</span>
+      </label>
+    </div>
+    <div class="voice-info" id="voiceInfo">⚠ Türkçe ses bulunamadı, İngilizce ses kullanılıyor. Yine de anlaşılır.</div>
+
+    <!-- Output -->
+    <div class="output-section" id="outputSection">
+      <div class="card-title" style="margin-top:0;">🎙 Oluşan Konuşma Metni</div>
+      <div class="output-box">
+        <div class="speaker-label">Seni Anlatan 1 Dakikalık Konuşma</div>
+        <div class="speech-text" id="speechText">Henüz bir metin oluşturulmadı.</div>
+      </div>
+    </div>
+
+    <div class="status">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">CV'ni yapıştır ve dönüştürmeye başla</span>
+    </div>
+
+  </div>
+
+  <footer>
+    💜 Ünzile Nur Kaya tarafından yapıldı · <a href="https://github.com/uzivatech/cvni-konustur" target="_blank">GitHub</a> · Sıfır maliyet, her şey tarayıcında çalışır
+  </footer>
+
+</div>
+
+<script>
+// ====== ÖRNEK CV ======
+function loadExample() {
+  document.getElementById('cvInput').value = `ÜNZİLE NUR KAYA
+
+İLETİŞİM
+E-posta: unzile@example.com
+LinkedIn: linkedin.com/in/unzilenurkaya
+Konum: Bandırma, Balıkesir
+
+EĞİTİM
+Bandırma Onyedi Eylül Üniversitesi — Yönetim Bilişim Sistemleri (2022-2026)
+Lisans, Genel Not Ortalaması: 3.2/4.0
+
+STAJ DENEYİMİ
+Bandırma Çelebi Limanı — IT Departmanı (Zorunlu Staj)
+- İş süreçlerini gözlemledi ve manuel HR sürecini analiz etti
+- İK departmanındaki evrak yoğunluğunu azaltmak için dijitalleştirme konsepti geliştirdi
+- Yapay zeka araçlarının iş süreçlerine entegrasyonu üzerine araştırma yaptı
+
+BECERİLER
+- Temel SQL, Excel, Power BI
+- İş Süreçleri Analizi
+- İletişim ve Takım Çalışması
+- Problem Çözme ve Analitik Düşünme
+- AI araçları kullanımı
+
+DİLLER
+İngilizce: Orta Seviye (aktif geliştiriyorum)
+
+HEDEF POZİSYON
+Junior İş Analisti / IT Business Analyst / Dijital Dönüşüm Uzman Yardımcısı
+
+KISA NOTLAR
+- Sosyal, empati yeteneği yüksek
+- Süreçlerdeki aksaklıkları fark etme ve iyileştirme önerisi üretme
+- Takım içinde iletişim kuvvetli, öğrenmeye açık`;
+  document.getElementById('statusText').textContent = '✅ Örnek CV yüklendi. Dönüştür butonuna bas!';
+  document.getElementById('statusDot').className = 'dot';
+  document.getElementById('outputSection').classList.remove('visible');
+  document.getElementById('speakBtn').disabled = true;
+  document.getElementById('stopBtn').disabled = true;
+}
+
+// ====== DÖNÜŞTÜRME ======
+function convertCV() {
+  const input = document.getElementById('cvInput').value.trim();
+  if (!input) {
+    setStatus('❌ Önce bir CV metni gir veya örnek yükle', '');
+    return;
+  }
+
+  setStatus('⏳ Konuşma metni oluşturuluyor...', 'active');
+
+  setTimeout(() => {
+    const speech = generateSpeech(input);
+    document.getElementById('speechText').innerHTML = speech;
+    document.getElementById('outputSection').classList.add('visible');
+    document.getElementById('speakBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = false;
+    setStatus('✅ Konuşma metni hazır! "Konuştur" butonuna bas.', 'active');
+
+    // Auto-populate voice select
+    populateVoices();
+  }, 300);
+}
+
+// ====== KONUŞMA METNİ ÜRETİCİ ======
+function generateSpeech(cv) {
+  const lines = cv.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const fullText = cv;
+
+  // Extract info
+  const name = extractName(cv);
+  const school = extractBetween(fullText, ['Bandırma', 'Üniversite', 'Üniversitesi', 'Yönetim']);
+  const degree = 'Yönetim Bilişim Sistemleri';
+  const internship = extractBetween(fullText, ['staj', 'Staj', 'İT', 'IT', 'departman']);
+  const skills = extractSkills(cv);
+  const targetRole = extractTarget(cv);
+  const mentionAI = fullText.includes('AI') || fullText.includes('yapay') || fullText.includes('dijital') || fullText.includes('otomasyon');
+
+  const now = new Date();
+  const gradMonth = 'Haziran 2026';
+
+  // Build speech
+  let speech = `Merhaba, ben ${name}.\n\n`;
+
+  speech += `${degree} son sınıf öğrencisiyim ve ${gradMonth} itibarıyla Bandırma Onyedi Eylül Üniversitesi'nden mezun oluyorum.\n\n`;
+
+  if (internship) {
+    speech += `Stajımı Bandırma Çelebi Limanı'nın IT departmanında tamamladım. Orada iş süreçlerini gözlemleme ve analiz etme fırsatım oldu. Özellikle İnsan Kaynakları departmanındaki manuel bir süreci fark ettim ve bu sürecin dijitalleştirilmesi için bir konsept geliştirdim.`;
+    if (mentionAI) {
+      speech += ` Ayrıca yapay zeka araçlarının iş süreçlerine nasıl entegre edilebileceği üzerine çalışmalar yaptım.`;
+    }
+    speech += `\n\n`;
+  }
+
+  speech += `Güçlü yanlarıma gelirsem: `;
+
+  if (skills.length > 0) {
+    speech += `${skills.slice(0, 4).join(', ')} konularında temel bilgi ve deneyime sahibim. `;
+  }
+
+  speech += `En önemli özelliklerim arasında güçlü iletişim becerim, empati yeteneğim, süreçlerdeki aksaklıkları fark etme ve iyileştirme önerileri üretme alışkanlığım var. Takım içinde çalışmayı seviyorum ve öğrenmeye her zaman açığım.\n\n`;
+
+  if (targetRole) {
+    speech += `Kariyer hedefim ${targetRole} pozisyonunda çalışmak. İş süreçleriyle teknoloji arasında köprü kurarak, şirketlere değer katmak istiyorum.\n\n`;
+  } else {
+    speech += `Kariyer hedefim, iş süreçleriyle teknoloji arasında köprü kurabileceğim bir pozisyonda çalışarak şirketlere değer katmak.\n\n`;
+  }
+
+  speech += `İngilizcemi aktif olarak geliştiriyorum ve teknoloji dünyasındaki yenilikleri yakından takip ediyorum.\n\n`;
+
+  speech += `Kısacası: İş süreçlerini anlayan, teknolojiyle çözen ve insanlarla iyi iletişim kuran bir Yönetim Bilişim Sistemleri mezunu olarak, ekibinize katkı sağlamak için sabırsızlanıyorum.\n\n`;
+
+  speech += `Beni dinlediğiniz için teşekkür ederim. Sorularınızı memnuniyetle yanıtlarım.`;
+
+  return formatSpeechHTML(speech);
+}
+
+function extractName(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  for (const line of lines) {
+    if (line.includes('ÜNZİLE') || line.includes('Ünzile') || line.includes('ünzile')) return 'Ünzile Nur Kaya';
+    if (line.includes('KAYA') || line.includes('kaya')) return line.replace(/[İLETİŞİMEĞİTİMSTAJ]/gi,'').trim().substring(0, 30);
+  }
+  return 'Ünzile Nur Kaya';
+}
+
+function extractBetween(text, keywords) {
+  for (const kw of keywords) {
+    if (text.includes(kw)) return true;
+  }
+  return false;
+}
+
+function extractSkills(text) {
+  const skillKeywords = ['SQL', 'Excel', 'Power BI', 'Python', 'Analiz', 'analiz', 'iletişim', 'İletişim', 'Problem', 'ekip', 'Takım', 'AI', 'yapay', 'Süreç', 'süreç', 'İş Analizi', 'Veri'];
+  const found = [];
+  for (const sk of skillKeywords) {
+    if (text.includes(sk) && !found.includes(sk)) {
+      found.push(sk);
+    }
+  }
+  return found.map(s => {
+    const map = {
+      'SQL': 'SQL', 'Excel': 'Excel', 'Power BI': 'Power BI', 'Python': 'Python',
+      'Analiz': 'Analitik Düşünme', 'analiz': 'Analitik Düşünme',
+      'iletişim': 'İletişim', 'İletişim': 'İletişim',
+      'Problem': 'Problem Çözme',
+      'ekip': 'Takım Çalışması', 'Takım': 'Takım Çalışması',
+      'AI': 'AI Araçları', 'yapay': 'AI Araçları',
+      'Süreç': 'Süreç Analizi', 'süreç': 'Süreç Analizi',
+      'İş Analizi': 'İş Analizi',
+      'Veri': 'Veri Analizi'
+    };
+    return map[s] || s;
+  }).filter((v,i,a) => a.indexOf(v) === i); // dedupe
+}
+
+function extractTarget(text) {
+  const lines = text.split('\n');
+  for (const line of lines) {
+    const l = line.toLowerCase();
+    if (l.includes('hedef') || l.includes('pozisyon') || l.includes('rol')) {
+      return line.replace(/^(HEDEF|POZİSYON|Hedef|Pozisyon|hedef|pozisyon)\s*/i, '').trim();
+    }
+  }
+  return '';
+}
+
+function formatSpeechHTML(text) {
+  const parts = text.split('\n\n');
+  return parts.map(p => {
+    if (p.startsWith('Merhaba')) return `<span class="highlight">${p}</span>\n\n`;
+    if (p.startsWith('Kısacası')) return `<span class="em">${p}</span>\n\n`;
+    if (p.startsWith('Beni dinlediğiniz')) return `<span class="highlight">${p}</span>`;
+    return p;
+  }).join('\n\n');
+}
+
+// ====== SES ======
+let voicesLoaded = false;
+let utterance = null;
+
+function populateVoices() {
+  const select = document.getElementById('voiceSelect');
+  const voices = speechSynthesis.getVoices();
+  
+  if (voices.length === 0) {
+    speechSynthesis.onvoiceschanged = () => populateVoices();
+    return;
+  }
+
+  select.innerHTML = '';
+  const turkishVoices = voices.filter(v => v.lang.startsWith('tr'));
+  const preferred = turkishVoices.length > 0 ? turkishVoices : voices;
+
+  preferred.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang})`;
+    select.appendChild(opt);
+  });
+
+  if (turkishVoices.length === 0) {
+    document.getElementById('voiceInfo').classList.add('visible');
+  } else {
+    document.getElementById('voiceInfo').classList.remove('visible');
+  }
+
+  voicesLoaded = true;
+}
+
+function speakIt() {
+  if (speechSynthesis.speaking) speechSynthesis.cancel();
+
+  const textEl = document.getElementById('speechText');
+  const rawText = textEl.textContent || textEl.innerText;
+  if (!rawText || rawText === 'Henüz bir metin oluşturulmadı.') return;
+
+  const select = document.getElementById('voiceSelect');
+  const rate = parseFloat(document.getElementById('rateSlider').value);
+  const voices = speechSynthesis.getVoices();
+  const selectedVoice = voices.find(v => v.name === select.value) || voices[0];
+
+  utterance = new SpeechSynthesisUtterance(rawText);
+  utterance.voice = selectedVoice;
+  utterance.rate = rate;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+
+  utterance.onstart = () => {
+    setStatus('🔊 Konuşuyor...', 'speaking');
+    document.getElementById('speakBtn').disabled = true;
+  };
+
+  utterance.onend = () => {
+    setStatus('✅ Konuşma bitti. Tekrar dinlemek için "Konuştur"a bas.', 'active');
+    document.getElementById('speakBtn').disabled = false;
+  };
+
+  utterance.onerror = () => {
+    setStatus('❌ Ses çalma hatası', '');
+    document.getElementById('speakBtn').disabled = false;
+  };
+
+  speechSynthesis.speak(utterance);
+}
+
+function stopSpeak() {
+  if (speechSynthesis.speaking) speechSynthesis.cancel();
+  setStatus('⏹ Durduruldu', '');
+  document.getElementById('speakBtn').disabled = false;
+}
+
+// ====== SLAYR ======
+document.getElementById('rateSlider').addEventListener('input', function() {
+  document.getElementById('rateLabel').textContent = this.value + 'x';
+});
+
+// ====== STATUS ======
+function setStatus(text, dotClass) {
+  document.getElementById('statusText').textContent = text;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'dot' + (dotClass ? ' ' + dotClass : '');
+}
+
+// ====== INIT ======
+// Load voices on page load
+if ('speechSynthesis' in window) {
+  populateVoices();
+  if (speechSynthesis.getVoices().length === 0) {
+    speechSynthesis.onvoiceschanged = populateVoices;
+  }
+} else {
+  document.getElementById('speakBtn').disabled = true;
+  document.getElementById('stopBtn').disabled = true;
+  setStatus('❌ Tarayıcın ses sentezini desteklemiyor', '');
+}
+
+// Load example automatically on first visit
+setTimeout(() => {
+  if (document.getElementById('cvInput').value.trim() === '') {
+    loadExample();
+  }
+}, 500);
+</script>
+
+</body>
+</html>
