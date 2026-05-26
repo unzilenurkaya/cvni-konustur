@@ -554,7 +554,8 @@ async function handlePDF(file) {
     const foundName = extractName(fullText);
     if (foundName) document.getElementById('nameInput').value = foundName;
 
-    setStatus(`✅ PDF'ten ${pdf.numPages} sayfa okundu. Adın otomatik bulundu mu kontrol et.`, 'active');
+    setStatus(`✅ PDF'ten ${pdf.numPages} sayfa okundu. Konuşma metni oluşturuluyor...`, 'active');
+    convertCV(); // direkt oluştur, beklemeye gerek yok
   } catch (err) {
     console.error(err);
     setStatus('❌ PDF okunamadı. Metin olarak yapıştırmayı dene.', 'error');
@@ -796,6 +797,20 @@ function setStatus(text, dotClass) {
   const dot = document.getElementById('statusDot');
   dot.className = 'dot' + (dotClass ? ' ' + dotClass : '');
 }
+
+// ========== OTOMATİK DÖNÜŞTÜRME ==========
+// Metin kutusu değişince veya ad değişince bekle ve otomatik oluştur
+let autoTimer = null;
+function scheduleAutoConvert() {
+  if (autoTimer) clearTimeout(autoTimer);
+  const cv = document.getElementById('cvInput').value.trim();
+  if (cv.length > 20) { // en az 20 karakter varsa otomatik başlasın
+    autoTimer = setTimeout(() => convertCV(), 600);
+  }
+}
+
+document.getElementById('cvInput').addEventListener('input', scheduleAutoConvert);
+document.getElementById('nameInput').addEventListener('input', scheduleAutoConvert);
 
 // ========== INIT ==========
 if ('speechSynthesis' in window) {
