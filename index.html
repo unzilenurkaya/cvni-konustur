@@ -450,6 +450,13 @@
 
 İpucu: PDF yüklemek daha kolay, ama dilersen metin olarak da girebilirsin."></textarea>
 
+    <!-- API Key (OpenRouter ücretsiz deepseek için) -->
+    <div class="api-row" style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+      <label style="font-size:0.85rem;color:#94a3b8;white-space:nowrap;">🔑 API Anahtarı:</label>
+      <input type="password" id="apiKeyInput" placeholder="OpenRouter API key (ücretsiz deepseek)" style="flex:1;background:#0f0f1a;border:1px solid #2d2d4a;border-radius:8px;padding:8px 12px;color:#e0e0e0;font-size:0.85rem;font-family:inherit;min-width:150px;">
+      <button class="btn btn-ai" id="aiBtn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white;box-shadow:0 4px 20px rgba(245,158,11,0.3);padding:10px 20px;border:none;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;">🤖 AI ile Oluştur</button>
+    </div>
+
     <!-- Buttons -->
     <div class="actions">
       <button class="btn btn-primary" id="convertBtn" onclick="convertCV()">✨ Konuşma Metni Oluştur</button>
@@ -804,13 +811,79 @@ let autoTimer = null;
 function scheduleAutoConvert() {
   if (autoTimer) clearTimeout(autoTimer);
   const cv = document.getElementById('cvInput').value.trim();
-  if (cv.length > 20) { // en az 20 karakter varsa otomatik başlasın
+  if (cv.length > 20) {
     autoTimer = setTimeout(() => convertCV(), 600);
   }
 }
 
 document.getElementById('cvInput').addEventListener('input', scheduleAutoConvert);
 document.getElementById('nameInput').addEventListener('input', scheduleAutoConvert);
+
+// ========== AI DESTEKLİ OLUŞTURMA ==========
+document.getElementById('aiBtn').addEventListener('click', async function() {
+  const cv = document.getElementById('cvInput').value.trim();
+  const name = document.getElementById('nameInput').value.trim();
+  const key = document.getElementById('apiKeyInput').value.trim();
+
+  if (!cv) { setStatus('❌ Önce bir CV gir veya PDF yükle', 'error'); return; }
+  if (!key) { setStatus('❌ Lütfen OpenRouter API anahtarını gir', 'error'); return; }
+
+  setStatus('⏳ AI CV'ni analiz ediyor...', 'active');
+  this.disabled = true;
+  this.innerHTML = '<span class="spinner"></span> Oluşturuluyor...';
+
+  const prompt = `Sen bir kariyer koçusun. Aşağıdaki CV'yi analiz et ve kişiye özel, doğal, ezber gibi durmayan 1 dakikalık bir kendini tanıtma konuşması yaz.
+
+Kurallar:
+- "Merhaba, ben [isim]" ile başlasın
+- Ezber okur gibi değil, gerçek bir insan konuşuyormuş gibi olsun
+- CV'deki gerçek deneyimleri, okulu, stajı, becerileri kullansın
+- Abartma yapmasın, samimi olsun
+- Mülakatta söylenebilecek kadar doğal olsun
+- Türkçe yaz
+- Sadece konuşma metnini yaz, başka açıklama ekleme
+
+CV:
+${cv}
+
+Ad: ${name || 'CV'den bulunamadı'}`;
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + key,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'deepseek/deepseek-v4-flash:free',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 600
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+
+    const data = await res.json();
+    const speech = data.choices[0].message.content;
+
+    document.getElementById('speechText').innerHTML = speech.replace(/\n\n/g, '\n\n').replace(/\n/g, '<br>');
+    document.getElementById('outputSection').classList.add('visible');
+    document.getElementById('speakBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = false;
+    setStatus('✅ AI konuşma metnin hazır!', 'active');
+  } catch (err) {
+    console.error(err);
+    setStatus('❌ AI hatası: ' + err.message.substring(0, 80), 'error');
+  } finally {
+    this.disabled = false;
+    this.innerHTML = '🤖 AI ile Oluştur';
+  }
+});
 
 // ========== INIT ==========
 if ('speechSynthesis' in window) {
